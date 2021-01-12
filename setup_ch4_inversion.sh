@@ -10,55 +10,51 @@
 # Turn on/off different steps. This will allow you to come back to this
 # script and set up different stages later.
 SetupTemplateRundir=true
-SetupSpinupRun=true
+SetupSpinupRun=false
 SetupJacobianRuns=true
-SetupInversion=true
-SetupPosteriorRun=true
+SetupInversion=false
+SetupPosteriorRun=false
+
+# Set number of threads
+export OMP_NUM_THREADS=8
 
 # Path to inversion setup
 INV_PATH=$(pwd -P)
 
 # Name for this run
-RUN_NAME="Test_Permian"
+RUN_NAME="TROPOMI_inversion"
 
 # Path where you want to set up CH4 inversion code and run directories
-MY_PATH="/n/holyscratch01/jacob_lab/msulprizio/CH4"
+JAC_PATH="/n/holyscratch01/jacob_lab/hnesser/${RUN_NAME}"
 
 # Path to find non-emissions input data
 DATA_PATH="/n/holyscratch01/external_repos/GEOS-CHEM/gcgrid/gcdata/ExtData"
 
-# Path to initial restart file
-RESTART_FILE="${MY_PATH}/input_data_permian/GEOSChem.Restart.fromBC.20180401_0000z.nc4"
+# Path to code
+CODE_PATH="${HOME}/Code.CH4_Inv"
+CODE_BRANCH="${RUN_NAME}"
 
-# Path to boundary condition files (for nested grid simulations)
-# Must put backslash before $ in $YYYY$MM$DD to properly work in sed command
-BC_FILES="${MY_PATH}/input_data_permian/Lu_BC_CH4/GEOSChem.BoundaryConditions.\$YYYY\$MM\$DD_0000z.nc4"
+# Start and end date for the production simulations
+START_DATE=20190101
+END_DATE=20200101
 
 # Start and end date for the spinup simulation
-DO_SPINUP=true
+DO_SPINUP=false
 SPINUP_START=20180401
 SPINUP_END=20180501
 
-# Start and end date for the production simulations
-START_DATE=20180501
-END_DATE=20180508
+# Path to initial restart file
+RESTART_FILE="/n/seasasfs02/hnesser/GC_TROPOMI_bias/restarts/GEOSChem.Restart.${START_DATE}_0000z.nc4"
 
-# Grid settings (Global 4x5)
-#RES="4x5"
-#MET="merra2"
-#LONS="-180.0 180.0"
-#LATS=" -90.0  90.0"
-#HPOLAR="T"
-#LEVS="47"
-#NEST="F"
-#REGION=""
-#BUFFER="0 0 0 0"
+# Path to boundary condition files (for nested grid simulations)
+# Must put backslash before $ in $YYYY$MM$DD to properly work in sed command
+BC_FILES="/n/seasasfs02/hnesser/GC_TROPOMI_bias/BCs/GEOSChem.BoundaryConditions.\$YYYY\$MM\$DD_0000z.nc4"
 
 # Grid settings (Nested NA)
 RES="0.25x0.3125"
 MET="geosfp"
-LONS="-111.0 -95.0"
-LATS="  24.0  39.0"
+LONS="-130.0 -60.0"
+LATS=" 9.75 60.0"
 HPOLAR="F"
 LEVS="47"
 NEST="T"
@@ -66,8 +62,8 @@ REGION="NA"  # NA,AS,CH,EU
 BUFFER="3 3 3 3"
 
 # Jacobian settings
-nClusters=243
-pPERT="1.5"
+nClusters=0
+pPERT="1E-8"
 
 # Turn on observation operators and planeflight diagnostics?
 GOSAT=false
@@ -76,6 +72,7 @@ UseEmisSF=false
 UseSeparateWetlandSF=false
 UseOHSF=false
 PLANEFLIGHT=false
+PLANEFLIGHT_PATH="\/n\/seasasfs02\/hnesser\/GC_TROPOMI_bias\/PFs\/planeflight_combined_YYYYMMDD"
 HourlyCH4=true
 
 ##=======================================================================
@@ -102,20 +99,33 @@ else
 fi
 
 ##=======================================================================
+## Get source code
+##=======================================================================
+# HON 2020/01/12: Removed submodule and added symbolic link
+cd ${CODE_PATH}
+git checkout ${CODE_BRANCH}
+cd {INV_PATH}
+ln -s -f ${CODE_PATH} GEOS-Chem
+
+##=======================================================================
 ## Set up template run directory
 ##=======================================================================
 if "$SetupTemplateRundir"; then
 
 # Copy run directory files directly from GEOS-Chem repository
 GCC_RUN_FILES="${INV_PATH}/GEOS-Chem/run/GCClassic"
-mkdir -p ${MY_PATH}/${RUN_NAME}
-cd ${MY_PATH}/${RUN_NAME}
+mkdir -p ${JAC_PATH}/${RUN_NAME}
+cd ${JAC_PATH}/${RUN_NAME}
 mkdir -p jacobian_runs
+
+# Copy and update settings in inversion run scripts
 cp ${GCC_RUN_FILES}/runScriptSamples/run_jacobian_simulations.sh jacobian_runs/
 sed -i -e "s:{RunName}:${RUN_NAME}:g" jacobian_runs/run_jacobian_simulations.sh
 cp ${GCC_RUN_FILES}/runScriptSamples/submit_jacobian_simulations_array.sh jacobian_runs/
-sed -i -e "s:{START}:0:g" -e "s:{END}:${nClusters}:g" jacobian_runs/submit_jacobian_simulations_array.sh
+sed -i -e "s:{START}:0:g" -e "s:{END}:${nPerturbations}:g" jacobian_runs/submit_jacobian_simulations_array.sh
 
+# Obtain GEOS-Chem input files: input.geos, HISTORY.rc, ch4_run, getRunInfo,
+# Makefile, HEMCO_Diagn.rc, and HEMCO_Config.rc
 RUN_TEMPLATE="template_run"
 mkdir -p ${RUN_TEMPLATE}
 cp -RLv ${GCC_RUN_FILES}/input.geos.templates/input.geos.CH4 ${RUN_TEMPLATE}/input.geos
@@ -130,6 +140,7 @@ else
     cp -RLv ${GCC_RUN_FILES}/HEMCO_Config.rc.templates/HEMCO_Config.rc.CH4 ${RUN_TEMPLATE}/HEMCO_Config.rc
 fi
 
+# Create run directory structure
 cd $RUN_TEMPLATE
 mkdir -p OutputDir
 mkdir -p Restarts
@@ -192,7 +203,7 @@ if "$PLANEFLIGHT"; then
     NEW="Turn on plane flt diag? : T"
     sed -i "s/$OLD/$NEW/g" input.geos
     OLD="Flight track info file  : Planeflight.dat.YYYYMMDD"
-    NEW="Flight track info file  : Planeflights\/Planeflight.dat.YYYYMMDD"
+    NEW="Flight track info file  : ${PLANEFLIGHT_PATH}"
     sed -i "s/$OLD/$NEW/g" input.geos
     OLD="Output file name        : plane.log.YYYYMMDD"
     NEW="Output file name        : Plane_Logs\/plane.log.YYYYMMDD"
@@ -233,7 +244,7 @@ fi
 
 ### Compile GEOS-Chem and store executable in template run directory
 make realclean CODE_DIR=${INV_PATH}/GEOS-Chem
-make -j4 build CODE_DIR=${INV_PATH}/GEOS-Chem
+make -j{$OMP_NUM_THREADS} build CODE_DIR=${INV_PATH}/GEOS-Chem
 
 ### Navigate back to top-level directory
 cd ..
@@ -338,7 +349,7 @@ if "$SetupJacobianRuns"; then
 x=0
 
 # Create run directory for each cluster so we can apply perturbation to each
-while [ $x -le $nClusters ];do
+while [ $x -le $nPerturbations ];do
 
    ### Positive or negative perturbation
    PERT=$pPERT
@@ -368,7 +379,7 @@ while [ $x -le $nClusters ];do
 
    ### Link to GEOS-Chem executable instead of having a copy in each run dir
    rm -rf geos
-   ln -s ../../${RUN_TEMPLATE}/geos .
+   ln -s -f ../../${RUN_TEMPLATE}/geos .
 
    # Link to restart file
    if "$DO_SPINUP"; then
@@ -405,7 +416,7 @@ fi  # SetupJacobianRuns
 ##=======================================================================
 if "$SetupInversion"; then
 
-    cd ${MY_PATH}/$RUN_NAME
+    cd ${JAC_PATH}/$RUN_NAME
     mkdir -p inversion
     mkdir -p inversion/data_converted
     mkdir -p inversion/data_GC
@@ -416,9 +427,9 @@ if "$SetupInversion"; then
     sed -i -e "s:{CLUSTERS}:${nClusters}:g" \
 	   -e "s:{START}:${START_DATE}:g" \
            -e "s:{END}:${END_DATE}:g" \
-	   -e "s:{RUNDIRS}:${MY_PATH}/${RUN_NAME}/jacobian_runs:g" \
+	   -e "s:{RUNDIRS}:${JAC_PATH}/${RUN_NAME}/jacobian_runs:g" \
 	   -e "s:{RUNNAME}:${RUN_NAME}:g" \
-	   -e "s:{MYPATH}:${MY_PATH}:g" inversion/run_inversion.sh
+	   -e "s:{MYPATH}:${JAC_PATH}:g" inversion/run_inversion.sh
 	   
     echo "=== DONE SETTING UP INVERSION DIRECTORY ==="
 
