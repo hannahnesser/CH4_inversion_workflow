@@ -1,6 +1,6 @@
-[submodule "GEOS-Chem"]
-	path = GEOS-Chem
-	url = https://github.com/hannahnesser/geos-chem.git
+#[submodule "GEOS-Chem"]
+#	path = GEOS-Chem
+#	url = https://github.com/hannahnesser/geos-chem.git
 [submodule "PostprocessingScripts/CH4_TROPOMI_INV"]
 	path = PostprocessingScripts/CH4_TROPOMI_INV
 	url = https://github.com/hannahnesser/CH4_TROPOMI_INV.git
