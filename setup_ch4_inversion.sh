@@ -14,6 +14,7 @@ SetupSpinupRun=false
 SetupJacobianRuns=true
 SetupInversion=false
 SetupPosteriorRun=false
+CompileCodeDir=false
 
 # Set number of threads
 export OMP_NUM_THREADS=8
@@ -25,14 +26,14 @@ INV_PATH=$(pwd -P)
 RUN_NAME="TROPOMI_inversion"
 
 # Path where you want to set up CH4 inversion code and run directories
-JAC_PATH="/n/holyscratch01/jacob_lab/hnesser/${RUN_NAME}"
+JAC_PATH="/n/holyscratch01/jacob_lab/hnesser"
 
 # Path to find non-emissions input data
 DATA_PATH="/n/holyscratch01/external_repos/GEOS-CHEM/gcgrid/gcdata/ExtData"
 
 # Path to code
-CODE_PATH="${HOME}/Code.CH4_Inv"
-CODE_BRANCH="${RUN_NAME}"
+CODE_PATH="${HOME}/CH4_GC/Code.CH4_Inv"
+CODE_BRANCH="eigenvector_perturbations"
 
 # Start and end date for the production simulations
 START_DATE=20190101
@@ -50,6 +51,11 @@ RESTART_FILE="/n/seasasfs02/hnesser/GC_TROPOMI_bias/restarts/GEOSChem.Restart.${
 # Must put backslash before $ in $YYYY$MM$DD to properly work in sed command
 BC_FILES="/n/seasasfs02/hnesser/GC_TROPOMI_bias/BCs/GEOSChem.BoundaryConditions.\$YYYY\$MM\$DD_0000z.nc4"
 
+# Jacobian settings
+nPerturbations=0
+pPERT="1E-8"
+PERT_FILES="/n/seasasfs02/hnesser/TROPOMI_inversion/evec_perturbations_PPPP.nc"
+
 # Grid settings (Nested NA)
 RES="0.25x0.3125"
 MET="geosfp"
@@ -61,18 +67,14 @@ NEST="T"
 REGION="NA"  # NA,AS,CH,EU
 BUFFER="3 3 3 3"
 
-# Jacobian settings
-nClusters=0
-pPERT="1E-8"
-
 # Turn on observation operators and planeflight diagnostics?
 GOSAT=false
 TCCON=false
 UseEmisSF=false
 UseSeparateWetlandSF=false
 UseOHSF=false
-PLANEFLIGHT=false
-PLANEFLIGHT_PATH="\/n\/seasasfs02\/hnesser\/GC_TROPOMI_bias\/PFs\/planeflight_combined_YYYYMMDD"
+PLANEFLIGHT=true
+PLANEFLIGHT_FILES="\/n\/seasasfs02\/hnesser\/GC_TROPOMI_bias\/PFs\/planeflight_combined_YYYYMMDD"
 HourlyCH4=true
 
 ##=======================================================================
@@ -104,7 +106,7 @@ fi
 # HON 2020/01/12: Removed submodule and added symbolic link
 cd ${CODE_PATH}
 git checkout ${CODE_BRANCH}
-cd {INV_PATH}
+cd ${INV_PATH}
 ln -s -f ${CODE_PATH} GEOS-Chem
 
 ##=======================================================================
@@ -203,7 +205,7 @@ if "$PLANEFLIGHT"; then
     NEW="Turn on plane flt diag? : T"
     sed -i "s/$OLD/$NEW/g" input.geos
     OLD="Flight track info file  : Planeflight.dat.YYYYMMDD"
-    NEW="Flight track info file  : ${PLANEFLIGHT_PATH}"
+    NEW="Flight track info file  : ${PLANEFLIGHT_FILES}"
     sed -i "s/$OLD/$NEW/g" input.geos
     OLD="Output file name        : plane.log.YYYYMMDD"
     NEW="Output file name        : Plane_Logs\/plane.log.YYYYMMDD"
@@ -223,7 +225,7 @@ sed -i -e "s:End:Monthly:g" \
 if [ ! -z "$REGION" ]; then
     sed -i -e "s:\$RES:\$RES.${REGION}:g" HEMCO_Config.rc
 fi
-       
+
 ### Set up HISTORY.rc
 ### Use monthly output for now
 sed -i -e "s:{FREQUENCY}:00000100 000000:g" \
@@ -239,12 +241,18 @@ if "$HourlyCH4"; then
 	   -e 's/#'\''LevelEdgeDiags/'\''LevelEdgeDiags/g' \
 	   -e 's/LevelEdgeDiags.frequency:   00000100 000000/LevelEdgeDiags.frequency:   00000000 010000/g' \
 	   -e 's/LevelEdgeDiags.duration:    00000100 000000/LevelEdgeDiags.duration:    00000001 000000/g' \
-	   -e 's/LevelEdgeDiags.mode:        '\''time-averaged/LevelEdgeDiags.mode:        '\''instantaneous/g' HISTORY.rc
+	   -e 's/LevelEdgeDiags.mode:        '\''time-averaged/LevelEdgeDiags.mode:        '\''instantaneous/g' \
+	   -e 's/#'\''StateMet/'\''StateMet/g' \
+	   -e 's/StateMet.frequency:   00000100 000000/StateMet.frequency:   00000000 010000/g' \
+	   -e 's/StateMet.duration:    00000100 000000/StateMet.duration:    00000001 000000/g' \
+	   -e 's/StateMet.mode:        '\''time-averaged/StateMet.mode:        '\''instantaneous/g' HISTORY.rc
 fi
 
-### Compile GEOS-Chem and store executable in template run directory
-make realclean CODE_DIR=${INV_PATH}/GEOS-Chem
-make -j{$OMP_NUM_THREADS} build CODE_DIR=${INV_PATH}/GEOS-Chem
+if "$CompileCodeDir"; then
+    ### Compile GEOS-Chem and store executable in template run directory
+    make realclean CODE_DIR=${INV_PATH}/GEOS-Chem
+    make -j${OMP_NUM_THREADS} build CODE_DIR=${INV_PATH}/GEOS-Chem
+fi
 
 ### Navigate back to top-level directory
 cd ..
@@ -269,10 +277,10 @@ if  "$SetupSpinupRun"; then
 
     ### Link to GEOS-Chem executable instead of having a copy in each run dir
     rm -rf geos
-    ln -s ../${RUN_TEMPLATE}/geos .
+    ln -s -f ../${RUN_TEMPLATE}/geos .
 
     # Link to restart file
-    ln -s $RESTART_FILE GEOSChem.Restart.${SPINUP_START}_0000z.nc4
+    ln -s -f $RESTART_FILE GEOSChem.Restart.${SPINUP_START}_0000z.nc4
     
     ### Update settings in input.geos
     sed -i -e "s|${START_DATE}|${SPINUP_START}|g" \
@@ -345,6 +353,8 @@ fi # SetupPosteriorRun
 ##=======================================================================
 if "$SetupJacobianRuns"; then
 
+cd ${JAC_PATH}/${RUN_NAME}
+
 # Initialize (x=0 is base run, i.e. no perturbation; x=1 is cluster=1; etc.)
 x=0
 
@@ -385,7 +395,7 @@ while [ $x -le $nPerturbations ];do
    if "$DO_SPINUP"; then
        ln -s ../../spinup_run/GEOSChem.Restart.${SPINUP_END}_0000z.nc4 GEOSChem.Restart.${START_DATE}_0000z.nc4
    else
-       ln -s $RESTART_FILE GEOSChem.Restart.${START_DATE}_0000z.nc4
+       ln -s -f $RESTART_FILE GEOSChem.Restart.${START_DATE}_0000z.nc4
    fi
    
    ### Update settings in input.geos
