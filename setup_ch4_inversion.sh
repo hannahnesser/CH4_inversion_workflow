@@ -113,7 +113,7 @@ fi
 cd ${CODE_PATH}
 git checkout ${CODE_BRANCH}
 cd ${INV_PATH}
-ln -s -f ${CODE_PATH} GEOS-Chem
+ln -sTf ${CODE_PATH} GEOS-Chem
 
 ##=======================================================================
 ## Set up template run directory
@@ -283,10 +283,10 @@ if  "$SetupSpinupRun"; then
 
     ### Link to GEOS-Chem executable instead of having a copy in each run dir
     rm -rf geos
-    ln -s -f ../${RUN_TEMPLATE}/geos .
+    ln -sTf ../${RUN_TEMPLATE}/geos .
 
     # Link to restart file
-    ln -s -f $RESTART_FILE GEOSChem.Restart.${SPINUP_START}_0000z.nc4
+    ln -sTf $RESTART_FILE GEOSChem.Restart.${SPINUP_START}_0000z.nc4
     
     ### Update settings in input.geos
     sed -i -e "s|${START_DATE}|${SPINUP_START}|g" \
@@ -395,13 +395,13 @@ while [ $x -le $nPerturbations ];do
 
    ### Link to GEOS-Chem executable instead of having a copy in each run dir
    rm -rf geos
-   ln -s -f ../../${RUN_TEMPLATE}/geos .
+   ln -sTf ../../${RUN_TEMPLATE}/geos .
 
    # Link to restart file
    if "$DO_SPINUP"; then
        ln -s ../../spinup_run/GEOSChem.Restart.${SPINUP_END}_0000z.nc4 GEOSChem.Restart.${START_DATE}_0000z.nc4
    else
-       ln -s -f $RESTART_FILE GEOSChem.Restart.${START_DATE}_0000z.nc4
+       ln -sTf $RESTART_FILE GEOSChem.Restart.${START_DATE}_0000z.nc4
    fi
    
    ### Update settings in input.geos
