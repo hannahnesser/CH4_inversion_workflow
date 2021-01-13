@@ -31,6 +31,11 @@ JAC_PATH="/n/holyscratch01/jacob_lab/hnesser"
 # Path to find non-emissions input data
 DATA_PATH="/n/holyscratch01/external_repos/GEOS-CHEM/gcgrid/gcdata/ExtData"
 
+# Path and file format for eigenvectors 
+# (use evecnumevecnum to substitute for the number)
+EVEC_PATH="/n/seasasfs02/TROPOMI_inversion/evec_perturbations"
+EVEC_FILE="evec_perturbations_evecnumevecnum.nc"
+
 # Path to code
 CODE_PATH="${HOME}/CH4_GC/Code.CH4_Inv"
 CODE_BRANCH="eigenvector_perturbations"
@@ -401,6 +406,19 @@ while [ $x -le $nPerturbations ];do
    ### Update settings in input.geos
    sed -i -e "s:pertpert:${PERT}:g" \
           -e "s:clustnumclustnum:${xUSE}:g" input.geos
+
+   ### Update settings in HEMCO_Config.rc
+   if [ $x -gt 0 ]; then
+       # Section extension switches
+       OLD="CH4_EVECS              :       false"
+       NEW="CH4_EVECS              :       true"
+       sed -i "s/$OLD/$NEW/g" HEMCO_Config.rc
+
+       # Eigenvector file
+       OLD="/n/seasasfs02/hnesser/TROPOMI_inversion/evec_perturbations/evec_perturbations_evecnumevecnum.nc"
+       NEW="${EVEC_PATH}/${EVEC_FILE//evecnumevecnum/${xstr}}"
+       sed -i "s/$OLD/$NEW/g" HEMCO_Config.rc
+   fi    
 
    ### Create run script from template
    sed -e "s:namename:${name}:g" ch4_run.template > ${name}.run
