@@ -256,6 +256,7 @@ fi
 
 if "$CompileCodeDir"; then
     ### Compile GEOS-Chem and store executable in template run directory
+    ./
     make realclean CODE_DIR=${INV_PATH}/GEOS-Chem
     make -j${OMP_NUM_THREADS} build CODE_DIR=${INV_PATH}/GEOS-Chem
 fi
@@ -326,13 +327,13 @@ if  "$SetupPosteriorRun"; then
 
     ### Link to GEOS-Chem executable instead of having a copy in each run dir
     rm -rf geos
-    ln -s ../${RUN_TEMPLATE}/geos .
+    ln -sTf ../${RUN_TEMPLATE}/geos .
 
     # Link to restart file
     if "$DO_SPINUP"; then
        ln -s ../../spinup_run/GEOSChem.Restart.${SPINUP_END}_0000z.nc4 GEOSChem.Restart.${START_DATE}_0000z.nc4
     else
-       ln -s $RESTART_FILE GEOSChem.Restart.${START_DATE}_0000z.nc4
+       ln -sTf $RESTART_FILE GEOSChem.Restart.${START_DATE}_0000z.nc4
     fi
     
     ### Update settings in input.geos
