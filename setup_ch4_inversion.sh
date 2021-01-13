@@ -14,7 +14,8 @@ SetupSpinupRun=false
 SetupJacobianRuns=true
 SetupInversion=false
 SetupPosteriorRun=false
-CompileCodeDir=false
+CompileCodeDir=true
+UseEvecPerts=true
 
 # Set number of threads
 export OMP_NUM_THREADS=8
@@ -408,7 +409,7 @@ while [ $x -le $nPerturbations ];do
           -e "s:clustnumclustnum:${xUSE}:g" input.geos
 
    # Update settings for non-prior runs
-   if [ $x -gt 0 ]; then
+   if [ $x -gt 0 -a "${UseEvecPerts}" ]; then
        ### Update settings in input.geos
        # Turn on eigenvector perturbations
        OLD="Eigenvector pert.?  : F"
