@@ -58,7 +58,7 @@ RESTART_FILE="/n/seasasfs02/hnesser/GC_TROPOMI_bias/restarts/GEOSChem.Restart.${
 BC_FILES="/n/seasasfs02/hnesser/GC_TROPOMI_bias/BCs/GEOSChem.BoundaryConditions.\$YYYY\$MM\$DD_0000z.nc4"
 
 # Jacobian settings
-nPerturbations=0
+nPerturbations=1
 pPERT="1E-8"
 PERT_FILES="/n/seasasfs02/hnesser/TROPOMI_inversion/evec_perturbations_PPPP.nc"
 
@@ -428,8 +428,8 @@ while [ $x -le $nPerturbations ];do
        NEW="${EVEC_PATH}/${EVEC_FILE//evecnumevecnum/${xstr}}"
        sed -i "s/$OLD/$NEW/g" HEMCO_Config.rc
 
-       ### Update HEMCO_Diagn.rc
-       NEW="EmisCH4_Evecs   CH4    0   14   -1   2   kg/m2/s  CH4_emissions_from_eigenvector"
+       ### Update HEMCO_Diagn.rcx
+       NEW="EmisCH4_Evecs        CH4    0   15   -1   2   kg/m2/s  CH4_emissions_from_eigenvectors"
        sed -i "/\#EOC/i$NEW" HEMCO_Diagn.rc
    fi
 
