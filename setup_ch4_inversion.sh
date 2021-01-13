@@ -407,8 +407,15 @@ while [ $x -le $nPerturbations ];do
    sed -i -e "s:pertpert:${PERT}:g" \
           -e "s:clustnumclustnum:${xUSE}:g" input.geos
 
-   ### Update settings in HEMCO_Config.rc
+   # Update settings for non-prior runs
    if [ $x -gt 0 ]; then
+       ### Update settings in input.geos
+       # Turn on eigenvector perturbations
+       OLD="Eigenvector pert.?  : F"
+       NEW="Eigenvector pert.?  : T"
+       sed -i "s/$OLD/$NEW/g" input.geos
+
+       ### Update settings in HEMCO_Config.rc
        # Section extension switches
        OLD="CH4_EVECS              :       false"
        NEW="CH4_EVECS              :       true"
