@@ -427,7 +427,11 @@ while [ $x -le $nPerturbations ];do
        OLD="/n/seasasfs02/hnesser/TROPOMI_inversion/evec_perturbations/evec_perturbations_evecnumevecnum.nc"
        NEW="${EVEC_PATH}/${EVEC_FILE//evecnumevecnum/${xstr}}"
        sed -i "s/$OLD/$NEW/g" HEMCO_Config.rc
-   fi    
+
+       ### Update HEMCO_Diagn.rc
+       NEW="EmisCH4_Evecs   CH4    0   14   -1   2   kg/m2/s  CH4_emissions_from_eigenvector"
+       sed -i "/\#EOC/i$NEW" HEMCO_Diagn.rc
+   fi
 
    ### Create run script from template
    sed -e "s:namename:${name}:g" ch4_run.template > ${name}.run
