@@ -249,9 +249,9 @@ if "$HourlyCH4"; then
 	   -e 's/LevelEdgeDiags.duration:    00000100 000000/LevelEdgeDiags.duration:    00000001 000000/g' \
 	   -e 's/LevelEdgeDiags.mode:        '\''time-averaged/LevelEdgeDiags.mode:        '\''instantaneous/g' \
 	   -e 's/#'\''StateMet/'\''StateMet/g' \
-	   -e 's/StateMet.frequency:   00000100 000000/StateMet.frequency:   00000000 010000/g' \
-	   -e 's/StateMet.duration:    00000100 000000/StateMet.duration:    00000001 000000/g' \
-	   -e 's/StateMet.mode:        '\''time-averaged/StateMet.mode:        '\''instantaneous/g' HISTORY.rc
+	   -e 's/StateMet.frequency:         00000100 000000/StateMet.frequency:         00000000 010000/g' \
+	   -e 's/StateMet.duration:          00000100 000000/StateMet.duration:          00000001 000000/g' \
+	   -e 's/StateMet.mode:              '\''time-averaged/StateMet.mode:              '\''instantaneous/g' HISTORY.rc
 fi
 
 if "$CompileCodeDir"; then
