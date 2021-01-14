@@ -14,7 +14,7 @@ SetupSpinupRun=false
 SetupJacobianRuns=true
 SetupInversion=false
 SetupPosteriorRun=false
-CompileCodeDir=true
+CompileCodeDir=false
 UseEvecPerts=true
 
 # Set number of threads
@@ -256,7 +256,6 @@ fi
 
 if "$CompileCodeDir"; then
     ### Compile GEOS-Chem and store executable in template run directory
-    ./
     make realclean CODE_DIR=${INV_PATH}/GEOS-Chem
     make -j${OMP_NUM_THREADS} build CODE_DIR=${INV_PATH}/GEOS-Chem
 fi
@@ -396,7 +395,7 @@ while [ $x -le $nPerturbations ];do
 
    ### Link to GEOS-Chem executable instead of having a copy in each run dir
    rm -rf geos
-   ln -sTf ../../${RUN_TEMPLATE}/geos .
+   ln -sTf ../../${RUN_TEMPLATE}/geos geos
 
    # Link to restart file
    if "$DO_SPINUP"; then
@@ -426,7 +425,7 @@ while [ $x -le $nPerturbations ];do
        # Eigenvector file
        OLD="/n/seasasfs02/hnesser/TROPOMI_inversion/evec_perturbations/evec_perturbations_evecnumevecnum.nc"
        NEW="${EVEC_PATH}/${EVEC_FILE//evecnumevecnum/${xstr}}"
-       sed -i "s/$OLD/$NEW/g" HEMCO_Config.rc
+       sed -i "s:$OLD:$NEW:g" HEMCO_Config.rc
 
        ### Update HEMCO_Diagn.rcx
        NEW="EmisCH4_Evecs        CH4    0   15   -1   2   kg/m2/s  CH4_emissions_from_eigenvectors"
@@ -436,6 +435,7 @@ while [ $x -le $nPerturbations ];do
    ### Create run script from template
    sed -e "s:namename:${name}:g" ch4_run.template > ${name}.run
    chmod 755 ${name}.run
+   rm ch4_run.template
 
    ### Navigate back to top-level directory
    cd ../..
