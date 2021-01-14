@@ -14,7 +14,8 @@ SetupSpinupRun=false
 SetupJacobianRuns=true
 SetupInversion=false
 SetupPosteriorRun=false
-CompileCodeDir=false
+CompileCodeDir=true
+CompileWithDebug=true
 UseEvecPerts=true
 
 # Set number of threads
@@ -59,7 +60,7 @@ BC_FILES="/n/seasasfs02/hnesser/GC_TROPOMI_bias/BCs/GEOSChem.BoundaryConditions.
 
 # Jacobian settings
 nPerturbations=1
-pPERT="1E-8"
+pPERT="1.0E-8"
 PERT_FILES="/n/seasasfs02/hnesser/TROPOMI_inversion/evec_perturbations_PPPP.nc"
 
 # Grid settings (Nested NA)
@@ -257,7 +258,11 @@ fi
 if "$CompileCodeDir"; then
     ### Compile GEOS-Chem and store executable in template run directory
     make realclean CODE_DIR=${INV_PATH}/GEOS-Chem
-    make -j${OMP_NUM_THREADS} build CODE_DIR=${INV_PATH}/GEOS-Chem
+    if ! "${CompileWithDebug}"; then
+	make -j${OMP_NUM_THREADS} build CODE_DIR=${INV_PATH}/GEOS-Chem BPCH_DIAG=y
+    else
+	make -j${OMP_NUM_THREADS} build CODE_DIR=${INV_PATH}/GEOS-Chem BPCH_DIAG=y DEBUG=y BOUNDS=y TRACEBACK=y FPE=y
+    fi
 fi
 
 ### Navigate back to top-level directory
