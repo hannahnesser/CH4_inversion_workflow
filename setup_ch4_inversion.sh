@@ -35,7 +35,7 @@ DATA_PATH="/n/holyscratch01/external_repos/GEOS-CHEM/gcgrid/gcdata/ExtData"
 
 # Path and file format for eigenvectors 
 # (use evecnumevecnum to substitute for the number)
-EVEC_PATH="/n/seasasfs02/TROPOMI_inversion/evec_perturbations"
+EVEC_PATH="/n/seasasfs02/hnesser/TROPOMI_inversion/evec_perturbations"
 EVEC_FILE="evec_perturbations_evecnumevecnum.nc"
 
 # Path to code
