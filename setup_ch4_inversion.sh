@@ -14,8 +14,8 @@ SetupSpinupRun=false
 SetupJacobianRuns=true
 SetupInversion=false
 SetupPosteriorRun=false
-CompileCodeDir=true
-CompileWithDebug=true
+CompileCodeDir=false
+CompileWithDebug=false
 UseEvecPerts=true
 
 # Set number of threads
@@ -40,7 +40,7 @@ EVEC_FILE="evec_perturbations_evecnumevecnum.nc"
 
 # Path to code
 CODE_PATH="${HOME}/CH4_GC/Code.CH4_Inv"
-CODE_BRANCH="eigenvector_perturbations"
+#CODE_BRANCH="eigenvector_perturbations"
 
 # Start and end date for the production simulations
 START_DATE=20190101
@@ -56,7 +56,7 @@ RESTART_FILE="/n/seasasfs02/hnesser/GC_TROPOMI_bias/restarts/GEOSChem.Restart.${
 
 # Path to boundary condition files (for nested grid simulations)
 # Must put backslash before $ in $YYYY$MM$DD to properly work in sed command
-BC_FILES="/n/seasasfs02/hnesser/GC_TROPOMI_bias/BCs/GEOSChem.BoundaryConditions.\$YYYY\$MM\$DD_0000z.nc4"
+BC_FILES="/n/seasasfs02/hnesser/TROPOMI_inversion/boundary_conditions/GEOSChem.BoundaryConditions.\$YYYY\$MM\$DD_0000z.nc4"
 
 # Jacobian settings
 nPerturbations=1
@@ -111,8 +111,8 @@ fi
 ## Get source code
 ##=======================================================================
 # HON 2020/01/12: Removed submodule and added symbolic link
-cd ${CODE_PATH}
-git checkout ${CODE_BRANCH}
+#cd ${CODE_PATH}
+#git checkout ${CODE_BRANCH}
 cd ${INV_PATH}
 ln -sTf ${CODE_PATH} GEOS-Chem
 
