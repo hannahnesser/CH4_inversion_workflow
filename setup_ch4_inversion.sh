@@ -259,16 +259,16 @@ if "$HourlyCH4"; then
     sed -i -e 's/'\''Met\_/\# '\''Met\_/g' HISTORY.rc
 
     # Turn back on needed fields
-    sed -i -e 's/\# '\''Met\_DELPDRY/'\''Met_\_DELPDRY/g' \
-	   -e 's/\# '\''Met\_PS1WET/'\''Met_\_PS1WET/g' \
-	   -e 's/\# '\''Met\_PS1DRY/'\''Met_\_PS1DRY/g' \
-           -e 's/\# '\''Met\_SPHU1/'\''Met_\_SPHU1/g' \
-           -e 's/\# '\''Met\_TMPU1/'\''Met_\_TMPU1/g' \
+    sed -i -e 's/\# '\''Met\_DELPDRY/'\''Met\_DELPDRY/g' \
+           -e 's/\# '\''Met\_PS1WET/'\''Met\_PS1WET/g' \
+           -e 's/\# '\''Met\_PS1DRY/'\''Met\_PS1DRY/g' \
+           -e 's/\# '\''Met\_SPHU1/'\''Met\_SPHU1/g' \
+           -e 's/\# '\''Met\_TMPU1/'\''Met\_TMPU1/g' \
            -e 's/\# '\''Met\_PEDGE/'\''Met\_PEDGE/g' \
            -e 's/\# '\''Met\_PEDGEDRY/'\''Met\_PEDGEDRY/g' \
            -e 's/\# '\''Met\_TropHt/'\''Met\_TropHt/g' \
            -e 's/\# '\''Met\_TropLev/'\''Met\_TropLev/g' \
-           -e 's/\# '\''Met\_TropP/'\''Met_\_TropP/g' \
+           -e 's/\# '\''Met\_TropP/'\''Met\_TropP/g' \
            -e 's/\# '\''Met\_AD/'\''Met\_AD/g' \
            -e 's/\# '\''Met\_AIRDEN/'\''Met\_AIRDEN/g' \
            -e 's/\# '\''Met\_ALBD/'\''Met\_ALBD/g' \
