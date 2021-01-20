@@ -242,6 +242,7 @@ sed -i -e "s:{FREQUENCY}:00000100 000000:g" \
 # If turned on, save out hourly CH4 concentrations and pressure fields to
 # daily files
 if "$HourlyCH4"; then
+    # Turn on proper collections
     sed -i -e 's/SpeciesConc.frequency:      00000100 000000/SpeciesConc.frequency:      00000000 010000/g' \
 	   -e 's/SpeciesConc.duration:       00000100 000000/SpeciesConc.duration:       00000001 000000/g' \
            -e 's/SpeciesConc.mode:           '\''time-averaged/SpeciesConc.mode:           '\''instantaneous/g' \
@@ -253,6 +254,21 @@ if "$HourlyCH4"; then
 	   -e 's/StateMet.frequency:         00000100 000000/StateMet.frequency:         00000000 010000/g' \
 	   -e 's/StateMet.duration:          00000100 000000/StateMet.duration:          00000001 000000/g' \
 	   -e 's/StateMet.mode:              '\''time-averaged/StateMet.mode:              '\''instantaneous/g' HISTORY.rc
+
+    # Turn off superfluous fields
+    sed -i -e 's/'\''Met\_/\# '\''Met\_/g' HISTORY.rc
+
+    # Turn back on needed fields
+    sed -i -e 's/\# '\''Met\_PEDGE/'\''Met\_PEDGE/g' \
+       -e 's/\# '\''Met\_PEDGEDRY/'\''Met\_PEDGEDRY/g' \
+       -e 's/\# '\''Met\_TropHt/'\''Met\_TropHt/g' \
+       -e 's/\# '\''Met\_TropLev/'\''Met\_TropLev/g' \
+       -e 's/\# '\''Met\_AD/'\''Met\_AD/g' \
+       -e 's/\# '\''Met\_AIRDEN/'\''Met\_AIRDEN/g' \
+       -e 's/\# '\''Met\_ALBD/'\''Met\_ALBD/g' \
+       -e 's/\# '\''Met\_BXHEIGHT/'\''Met\_BXHEIGHT/g' \
+       -e 's/\# '\''Met\_PBLTOPL/'\''Met\_PBLTOPL/g' \
+       -e 's/\# '\''Met\_PBLH/'\''Met\_PBLH/g' HISTORY.rc
 fi
 
 if "$CompileCodeDir"; then
