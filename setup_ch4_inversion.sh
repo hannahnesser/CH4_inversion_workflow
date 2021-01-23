@@ -19,7 +19,7 @@ CompileWithDebug=false
 UseEvecPerts=true
 
 # Set number of threads
-export OMP_NUM_THREADS=8
+export OMP_NUM_THREADS=16
 
 # Path to inversion setup
 INV_PATH=$(pwd -P)
@@ -80,7 +80,7 @@ TCCON=false
 UseEmisSF=false
 UseSeparateWetlandSF=false
 UseOHSF=false
-PLANEFLIGHT=true
+PLANEFLIGHT=false
 PLANEFLIGHT_FILES="\/n\/seasasfs02\/hnesser\/GC_TROPOMI_bias\/PFs\/planeflight_combined_YYYYMMDD"
 HourlyCH4=true
 
@@ -281,7 +281,11 @@ if "$CompileCodeDir"; then
     ### Compile GEOS-Chem and store executable in template run directory
     make realclean CODE_DIR=${INV_PATH}/GEOS-Chem
     if ! "${CompileWithDebug}"; then
-	make -j${OMP_NUM_THREADS} build CODE_DIR=${INV_PATH}/GEOS-Chem BPCH_DIAG=y
+	if "$PLANEFLIGHT"; then
+	    make -j${OMP_NUM_THREADS} build CODE_DIR=${INV_PATH}/GEOS-Chem BPCH_DIAG=y
+	else
+	    make -j${OMP_NUM_THREADS} build CODE_DIR=${INV_PATH}/GEOS-Chem
+	fi
     else
 	make -j${OMP_NUM_THREADS} build CODE_DIR=${INV_PATH}/GEOS-Chem BPCH_DIAG=y DEBUG=y BOUNDS=y TRACEBACK=y FPE=y
     fi
