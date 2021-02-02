@@ -234,7 +234,12 @@ if [ ! -z "$REGION" ]; then
 fi
 
 ### Set up HISTORY.rc
-### Use monthly output for now
+
+# Change restart frequency to monthly
+sed -i -e "s/Restart.frequency:          '\''End'\''/Restart.frequency:          00000100 000000/g" \
+       -e "s/Restart.duration:           '\''End'\''/Restart.duration:           00000100 000000/g" HISTORY.rc
+
+#Use monthly output for now
 sed -i -e "s:{FREQUENCY}:00000100 000000:g" \
        -e "s:{DURATION}:00000100 000000:g" \
        -e 's:'\''CH4:#'\''CH4:g' HISTORY.rc
