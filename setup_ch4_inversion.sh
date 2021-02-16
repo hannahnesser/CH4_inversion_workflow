@@ -152,6 +152,8 @@ fi
 # Create run directory structure
 cd $RUN_TEMPLATE
 mkdir -p OutputDir
+mkdir -p ProcessedDir
+mkdir -p SummaryDir
 mkdir -p Restarts
 
 ### Update settings in input.geos
