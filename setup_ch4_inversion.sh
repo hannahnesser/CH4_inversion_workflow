@@ -238,8 +238,9 @@ fi
 ### Set up HISTORY.rc
 
 # Change restart frequency to monthly
-sed -i -e "s/Restart.frequency:          '\''End'\''/Restart.frequency:          00000100 000000/g" \
-       -e "s/Restart.duration:           '\''End'\''/Restart.duration:           00000100 000000/g" HISTORY.rc
+sed -i -e "s/Restart.frequency:          'End'/Restart.frequency:          00000100 000000/g" \
+       -e "s/Restart.duration:           'End'/Restart.duration:           00000100 000000/g" HISTORY.rc
+grep -i "restart" HISTORY.rc
 
 #Use monthly output for now
 sed -i -e "s:{FREQUENCY}:00000100 000000:g" \
