@@ -15,7 +15,7 @@ SetupJacobianRuns=true
 SetupInversion=false
 SetupPosteriorRun=false
 CompileCodeDir=false
-CompileWithDebug=false
+CompileWithDebug=true
 UseEvecPerts=true
 
 # Set number of threads
@@ -43,7 +43,7 @@ CODE_PATH="${HOME}/CH4_GC/Code.CH4_Inv"
 #CODE_BRANCH="eigenvector_perturbations"
 
 # Start and end date for the production simulations
-START_DATE=20190101
+START_DATE=20191201
 END_DATE=20200101
 
 # Start and end date for the spinup simulation
@@ -52,14 +52,14 @@ SPINUP_START=20180401
 SPINUP_END=20180501
 
 # Path to initial restart file
-RESTART_FILE="/n/seasasfs02/hnesser/GC_TROPOMI_bias/restarts/GEOSChem.Restart.${START_DATE}_0000z.nc4"
+RESTART_FILE="/n/seasasfs02/hnesser/TROPOMI_inversion/restarts/GEOSChem.Restart.${START_DATE}_0000z.nc4"
 
 # Path to boundary condition files (for nested grid simulations)
 # Must put backslash before $ in $YYYY$MM$DD to properly work in sed command
 BC_FILES="/n/seasasfs02/hnesser/TROPOMI_inversion/boundary_conditions/GEOSChem.BoundaryConditions.\$YYYY\$MM\$DD_0000z.nc4"
 
 # Jacobian settings
-nPerturbations=1
+nPerturbations=0
 pPERT="1.0E-8"
 PERT_FILES="/n/seasasfs02/hnesser/TROPOMI_inversion/evec_perturbations_PPPP.nc"
 
